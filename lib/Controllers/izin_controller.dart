@@ -34,7 +34,7 @@ class IzinController extends GetxController {
     final token = box.read('token');
 
     try {
-      final uri = Uri.parse('http://192.168.1.12:8000/api/izin').replace(queryParameters: {
+      final uri = Uri.parse('http://192.168.1.8:8000/api/izin').replace(queryParameters: {
         if (bulan != null) 'bulan': bulan.toString(),
         if (tahun != null) 'tahun': tahun.toString(),
       });
@@ -70,7 +70,7 @@ class IzinController extends GetxController {
     final token = box.read('token');
 
     try {
-      var uri = Uri.parse('http://192.168.1.12:8000/api/izin');
+      var uri = Uri.parse('http://192.168.1.8:8000/api/izin');
       var request = http.MultipartRequest('POST', uri);
       request.headers['Authorization'] = 'Bearer $token';
       request.fields['jenis_izin'] = jenisIzin;
@@ -106,7 +106,7 @@ class IzinController extends GetxController {
       final token = box.read('token');
 
       final response = await http.get(
-        Uri.parse('http://192.168.1.12:8000/api/izin/$id'),
+        Uri.parse('http://192.168.1.8:8000/api/izin/$id'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

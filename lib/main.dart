@@ -14,6 +14,9 @@ void main() async {
   await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // print('Saved FCM Token: ${GetStorage().read('lastSavedToken')}');
+  // await GetStorage().remove('lastSavedToken');
+  // print('FCM Token: ${GetStorage().read('lastSavedToken')}');
 
   Get.put(AuthController());
   Get.put(TabNavigationController());

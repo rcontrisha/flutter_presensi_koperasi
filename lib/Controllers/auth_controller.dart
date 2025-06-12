@@ -11,7 +11,7 @@ class AuthController extends GetxController {
     isLoading.value = true;
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.12:8000/api/register'),
+      Uri.parse('http://192.168.1.8:8000/api/register'),
       headers: {'Accept': 'application/json'},
       body: {'name': name, 'email': email},
     );
@@ -32,7 +32,7 @@ class AuthController extends GetxController {
     isLoading.value = true;
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.12:8000/api/login'),
+      Uri.parse('http://192.168.1.8:8000/api/login'),
       headers: {'Accept': 'application/json'},
       body: {
         'email': email,
@@ -68,7 +68,7 @@ class AuthController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.12:8000/api/forgot-password'),
+        Uri.parse('http://192.168.1.8:8000/api/forgot-password'),
         headers: {
           'Accept': 'application/json',
         },

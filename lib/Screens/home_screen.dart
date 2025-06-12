@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Icon(Icons.person, color: Colors.white),
         ),
         title: Text(GetStorage().read('user')['name'] ?? 'Nama Pegawai', style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(GetStorage().read('pegawai')['jabatan'] ?? 'Jabatan'),
+        subtitle: Text(GetStorage().read('pegawai')?['jabatan'] ?? 'Jabatan'),
         trailing: Icon(Icons.verified, color: Colors.green),
       ),
     );

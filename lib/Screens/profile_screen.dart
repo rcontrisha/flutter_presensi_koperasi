@@ -16,10 +16,30 @@ class _ProfilePageState extends State<ProfilePage> {
   final controller = Get.put(ProfileController());
   final presensi = Get.put(PresensiController());
 
+  final noHpController = TextEditingController();
+  final alamatController = TextEditingController();
+  final pendidikanController = TextEditingController();
+  final jabatanController = TextEditingController();
+  final tempatLahirController = TextEditingController();
+  final tanggalLahirController = TextEditingController();
+
+  String selectedGender = 'L';
+
   @override
   void initState() {
     super.initState();
     controller.fetchProfile();
+  }
+
+  @override
+  void dispose() {
+    noHpController.dispose();
+    alamatController.dispose();
+    pendidikanController.dispose();
+    jabatanController.dispose();
+    tempatLahirController.dispose();
+    tanggalLahirController.dispose();
+    super.dispose();
   }
 
   @override
@@ -32,106 +52,291 @@ class _ProfilePageState extends State<ProfilePage> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final profile = controller.profileData;
+        final profile = controller.profileData.value; // ✅ ambil .value
 
-        String formatTanggal(String tanggal) {
-          try {
-            final date = DateTime.parse(tanggal);
-            return DateFormat("d MMMM yyyy", "id_ID").format(date);
-          } catch (_) {
-            return tanggal; // fallback jika parsing gagal
-          }
+        if (profile == null) {
+          return _buildCreateProfileForm(); // belum ada data
         }
 
-        String jenisKelamin(String? kode) {
-          if (kode == 'L') return 'Laki-laki';
-          if (kode == 'P') return 'Perempuan';
-          return '-';
-        }
+        return _buildProfileView(context, profile, screenHeight); // ada data
+      }),
+    );
+  }
 
-        final tempat = profile['tempat_lahir'] ?? '-';
-        final tgl = profile['tanggal_lahir'] ?? '-';
-        final tempatTgl = (tgl != '-' && tempat != '-') ? '$tempat, ${formatTanggal(tgl)}' : '-';
-        final jk = jenisKelamin(profile['jenis_kelamin']);
+  Widget _buildProfileView(
+    BuildContext context,
+    Map<String, dynamic> profile,
+    double screenHeight,
+  ) {
+    String formatTanggal(String tanggal) {
+      try {
+        final date = DateTime.parse(tanggal);
+        return DateFormat("d MMMM yyyy", "id_ID").format(date);
+      } catch (_) {
+        return tanggal; // fallback jika parsing gagal
+      }
+    }
 
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              // Bagian atas
-              SizedBox(
-                height: screenHeight * 0.2,
-                child: const _TopPortion(),
-              ),
-              const SizedBox(height: 55), // untuk mengimbangi overflow avatar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                child: Column(
+    String jenisKelamin(String? kode) {
+      if (kode == 'L') return 'Laki-laki';
+      if (kode == 'P') return 'Perempuan';
+      return '-';
+    }
+
+    final tempat = profile['tempat_lahir'] ?? '-';
+    final tgl = profile['tanggal_lahir'] ?? '-';
+    final tempatTgl =
+        (tgl != '-' && tempat != '-') ? '$tempat, ${formatTanggal(tgl)}' : '-';
+    final jk = jenisKelamin(profile['jenis_kelamin']);
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Bagian atas
+          SizedBox(height: screenHeight * 0.2, child: const _TopPortion()),
+          const SizedBox(height: 55), // untuk mengimbangi overflow avatar
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 16.0,
+            ),
+            child: Column(
+              children: [
+                Text(
+                  GetStorage().read('user')['name'] ?? 'Nama Pegawai',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  profile['jabatan'] ?? 'Jabatan Pegawai',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 16),
+                Column(
                   children: [
-                    Text(
-                      GetStorage().read('user')['name'] ?? 'Nama Pegawai',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      profile['jabatan'] ?? 'Jabatan Pegawai',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 16),
-                    Column(
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 10,
+                      runSpacing: 10,
                       children: [
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            FloatingActionButton.extended(
-                              onPressed: () => _showEditProfileSheet(profile),
-                              heroTag: 'edit',
-                              elevation: 0,
-                              label: const Text("Edit Data"),
-                              icon: const Icon(Icons.edit),
-                            ),
-                            FloatingActionButton.extended(
-                              onPressed: () => _showChangePasswordSheet(),
-                              heroTag: 'edit_password',
-                              elevation: 0,
-                              label: const Text("Change Password"),
-                              icon: const Icon(Icons.vpn_key),
-                            ),
-                          ],
+                        FloatingActionButton.extended(
+                          onPressed: () => _showEditProfileSheet(profile),
+                          heroTag: 'edit',
+                          elevation: 0,
+                          label: const Text("Edit Data"),
+                          icon: const Icon(Icons.edit),
                         ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: FloatingActionButton.extended(
-                            onPressed: presensi.logout,
-                            heroTag: 'logout',
-                            elevation: 0,
-                            label: const Text("Log Out"),
-                            icon: const Icon(Icons.logout),
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                          ),
+                        FloatingActionButton.extended(
+                          onPressed: () => _showChangePasswordSheet(),
+                          heroTag: 'edit_password',
+                          elevation: 0,
+                          label: const Text("Change Password"),
+                          icon: const Icon(Icons.vpn_key),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    _buildProfileDetailRow("Email", GetStorage().read('user')['email']),
-                    _buildProfileDetailRow("No HP", profile['no_telpon']),
-                    _buildProfileDetailRow("Jenis Kelamin", jk),
-                    _buildProfileDetailRow("Alamat", profile['alamat']),
-                    _buildProfileDetailRow("Tempat, Tanggal Lahir", tempatTgl),
-                    _buildProfileDetailRow("Pendidikan Terakhir", profile['pendidikan_terakhir']),
-                    const SizedBox(height: 72)
+                    const SizedBox(height: 16),
+                    Center(
+                      child: FloatingActionButton.extended(
+                        onPressed: presensi.logout,
+                        heroTag: 'logout',
+                        elevation: 0,
+                        label: const Text("Log Out"),
+                        icon: const Icon(Icons.logout),
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                _buildProfileDetailRow(
+                  "Email",
+                  GetStorage().read('user')['email'],
+                ),
+                _buildProfileDetailRow("No HP", profile['no_telpon']),
+                _buildProfileDetailRow("Jenis Kelamin", jk),
+                _buildProfileDetailRow("Alamat", profile['alamat']),
+                _buildProfileDetailRow("Tempat, Tanggal Lahir", tempatTgl),
+                _buildProfileDetailRow(
+                  "Pendidikan Terakhir",
+                  profile['pendidikan_terakhir'],
+                ),
+                const SizedBox(height: 72),
+              ],
+            ),
           ),
-        );
-      }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCreateProfileForm() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 32),
+            Text(
+              "Lengkapi Data Profil",
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.teal[800],
+              ),
+            ),
+            const SizedBox(height: 24),
+      
+            // ========== Form Fields ==========
+            _buildInputLabel("Tanggal Lahir"),
+            TextField(
+              controller: tanggalLahirController,
+              readOnly: true,
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime(2000),
+                  firstDate: DateTime(1950),
+                  lastDate: DateTime.now(),
+                );
+                if (picked != null) {
+                  tanggalLahirController.text = DateFormat(
+                    'yyyy-MM-dd',
+                  ).format(picked);
+                }
+              },
+              decoration: _buildInputDecoration("Pilih tanggal lahir"),
+            ),
+            const SizedBox(height: 16),
+      
+            _buildInputLabel("Tempat Lahir"),
+            TextField(
+              controller: tempatLahirController,
+              decoration: _buildInputDecoration("Contoh: Yogyakarta"),
+            ),
+            const SizedBox(height: 16),
+      
+            _buildInputLabel("Jabatan"),
+            TextField(
+              controller: jabatanController,
+              decoration: _buildInputDecoration("Contoh: Staf IT"),
+            ),
+            const SizedBox(height: 16),
+      
+            _buildInputLabel("No HP"),
+            TextField(
+              controller: noHpController,
+              keyboardType: TextInputType.phone,
+              decoration: _buildInputDecoration("Contoh: 0812xxxxxxx"),
+            ),
+            const SizedBox(height: 16),
+      
+            _buildInputLabel("Alamat"),
+            TextField(
+              controller: alamatController,
+              decoration: _buildInputDecoration("Contoh: Jl. Merpati No. 123"),
+            ),
+            const SizedBox(height: 16),
+      
+            _buildInputLabel("Jenis Kelamin"),
+            DropdownButtonFormField<String>(
+              value: selectedGender,
+              decoration: _buildInputDecoration("Pilih jenis kelamin"),
+              items: const [
+                DropdownMenuItem(value: 'L', child: Text("Laki-laki")),
+                DropdownMenuItem(value: 'P', child: Text("Perempuan")),
+              ],
+              onChanged: (value) {
+                if (value != null) selectedGender = value;
+              },
+            ),
+            const SizedBox(height: 16),
+      
+            _buildInputLabel("Pendidikan Terakhir"),
+            TextField(
+              controller: pendidikanController,
+              decoration: _buildInputDecoration("Contoh: S1 Teknik Informatika"),
+            ),
+            const SizedBox(height: 32),
+      
+            // ========== Tombol Simpan ==========
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal[700],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.save),
+                label: const Text(
+                  "Simpan Profil",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () async {
+                  final data = {
+                    'no_telpon': noHpController.text,
+                    'alamat': alamatController.text,
+                    'jenis_kelamin': selectedGender,
+                    'pendidikan_terakhir': pendidikanController.text,
+                    'jabatan': jabatanController.text,
+                    'tempat_lahir': tempatLahirController.text,
+                    'tanggal_lahir': tanggalLahirController.text,
+                  };
+      
+                  final success = await controller.createProfile(data);
+                  if (success) {
+                    Get.snackbar("Berhasil", "Data profil berhasil disimpan");
+                    controller.fetchProfile(); // Refresh
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 48),
+          ],
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.grey.shade100,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.teal, width: 1.5),
+      ),
+    );
+  }
+
+  Widget _buildInputLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
+      ),
     );
   }
 
@@ -160,12 +365,24 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showEditProfileSheet(Map<dynamic, dynamic> profile) {
-    final noHpController = TextEditingController(text: profile['no_telpon'] ?? '');
-    final alamatController = TextEditingController(text: profile['alamat'] ?? '');
-    final pendidikanController = TextEditingController(text: profile['pendidikan_terakhir'] ?? '');
-    final TextEditingController jabatanController = TextEditingController(text: profile['jabatan'] ?? '');
-    final TextEditingController tempatLahirController = TextEditingController(text: profile['tempat_lahir'] ?? '');
-    final TextEditingController tanggalLahirController = TextEditingController(text: profile['tanggal_lahir'] ?? '');
+    final noHpController = TextEditingController(
+      text: profile['no_telpon'] ?? '',
+    );
+    final alamatController = TextEditingController(
+      text: profile['alamat'] ?? '',
+    );
+    final pendidikanController = TextEditingController(
+      text: profile['pendidikan_terakhir'] ?? '',
+    );
+    final TextEditingController jabatanController = TextEditingController(
+      text: profile['jabatan'] ?? '',
+    );
+    final TextEditingController tempatLahirController = TextEditingController(
+      text: profile['tempat_lahir'] ?? '',
+    );
+    final TextEditingController tanggalLahirController = TextEditingController(
+      text: profile['tanggal_lahir'] ?? '',
+    );
 
     String selectedGender = profile['jenis_kelamin'] ?? 'L'; // default ke 'L'
 
@@ -203,7 +420,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       lastDate: DateTime.now(),
                     );
                     if (picked != null) {
-                      tanggalLahirController.text = DateFormat('yyyy-MM-dd').format(picked);
+                      tanggalLahirController.text = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(picked);
                     }
                   },
                   decoration: const InputDecoration(labelText: 'Tanggal Lahir'),
@@ -230,7 +449,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 TextField(
                   controller: pendidikanController,
-                  decoration: const InputDecoration(labelText: "Pendidikan Terakhir"),
+                  decoration: const InputDecoration(
+                    labelText: "Pendidikan Terakhir",
+                  ),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
@@ -242,14 +463,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       'pendidikan_terakhir': pendidikanController.text,
                       'jabatan': jabatanController.text,
                       'tempat_lahir': tempatLahirController.text,
-                      'tanggal_lahir': tanggalLahirController.text, // Format yyyy-MM-dd
+                      'tanggal_lahir':
+                          tanggalLahirController.text, // Format yyyy-MM-dd
                     };
 
                     final success = await controller.updateProfile(data);
 
                     if (success) {
                       Get.back(); // tutup modal
-                      Get.snackbar("Berhasil", "Data profil berhasil diperbarui");
+                      Get.snackbar(
+                        "Berhasil",
+                        "Data profil berhasil diperbarui",
+                      );
                     }
                   },
                   icon: const Icon(Icons.save),
@@ -294,7 +519,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextField(
                   controller: currentPasswordController,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: "Current Password"),
+                  decoration: const InputDecoration(
+                    labelText: "Current Password",
+                  ),
                 ),
                 TextField(
                   controller: newPasswordController,
@@ -304,7 +531,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextField(
                   controller: confirmPasswordController,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: "Confirm New Password"),
+                  decoration: const InputDecoration(
+                    labelText: "Confirm New Password",
+                  ),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
@@ -313,7 +542,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     showDialog(
                       context: context,
                       barrierDismissible: false,
-                      builder: (_) => const Center(child: CircularProgressIndicator()),
+                      builder:
+                          (_) =>
+                              const Center(child: CircularProgressIndicator()),
                     );
 
                     final success = await controller.changePassword(
@@ -371,7 +602,8 @@ class _TopPortion extends StatelessWidget {
       children: [
         // Bagian biru (gradient)
         Container(
-          height: 170, // Setengah dari tinggi total _TopPortion (anggap totalnya 300)
+          height:
+              170, // Setengah dari tinggi total _TopPortion (anggap totalnya 300)
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
@@ -414,7 +646,8 @@ class _TopPortion extends StatelessWidget {
                     right: 0,
                     child: CircleAvatar(
                       radius: 20,
-                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
                       child: Container(
                         margin: const EdgeInsets.all(8.0),
                         decoration: const BoxDecoration(

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class ProfileController extends GetxController {
   var isLoading = false.obs;
-  var profileData = {}.obs;
+  Rxn<Map<String, dynamic>> profileData = Rxn<Map<String, dynamic>>();
   final box = GetStorage();
 
   Future<void> fetchProfile() async {
@@ -13,7 +13,7 @@ class ProfileController extends GetxController {
     final token = box.read('token');
 
     final response = await http.get(
-      Uri.parse('http://192.168.1.12:8000/api/profile'),
+      Uri.parse('http://192.168.1.8:8000/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -23,7 +23,7 @@ class ProfileController extends GetxController {
     if (response.statusCode == 200) {
       profileData.value = json.decode(response.body)['data'];
     } else {
-      profileData.value = {}; // reset jika gagal
+      profileData.value = null; // reset jika gagal
       Get.snackbar("Error", "Gagal mengambil data profil");
     }
 
@@ -34,7 +34,7 @@ class ProfileController extends GetxController {
     final token = box.read('token');
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.12:8000/api/profile'),
+      Uri.parse('http://192.168.1.8:8000/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ class ProfileController extends GetxController {
     final token = box.read('token');
 
     final response = await http.put(
-      Uri.parse('http://192.168.1.12:8000/api/profile'),
+      Uri.parse('http://192.168.1.8:8000/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ class ProfileController extends GetxController {
     }
 
     final response = await http.put(
-      Uri.parse('http://192.168.1.12:8000/api/user/update-password'),
+      Uri.parse('http://192.168.1.8:8000/api/user/update-password'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

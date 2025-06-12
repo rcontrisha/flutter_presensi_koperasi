@@ -18,10 +18,13 @@ class FCMService {
       String? fcmToken = await FirebaseMessaging.instance.getToken();
       String? lastSavedToken = box.read('last_fcm_token');
 
+      print('FCM Token: ${fcmToken}');
+      print('Last Saved Token: ${lastSavedToken}');
+
       if (fcmToken != null && fcmToken != lastSavedToken) {
         try {
           final response = await http.post(
-            Uri.parse('http://192.168.1.12:8000/api/save-fcm-token'),
+            Uri.parse('http://192.168.1.8:8000/api/save-fcm-token'),
             headers: {
               'Authorization': 'Bearer $tokenUser',
               'Accept': 'application/json',
