@@ -41,7 +41,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: '#',
+    apiKey: 'AIzaSyASl8wjEvHW5Weo4LzeDw3xSnsLv-_PKxw',
     appId: '1:649346244475:web:864b82451c48a0c889a7de',
     messagingSenderId: '649346244475',
     projectId: 'presensi-dinkop',
@@ -51,15 +51,15 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: '#',
-    appId: '#',
+    apiKey: 'AIzaSyDsqGZfgGyC_sGmpkzuU9Ow0QeMZ-JQ4og',
+    appId: '1:649346244475:android:02dab0bb5a8131cd89a7de',
     messagingSenderId: '649346244475',
     projectId: 'presensi-dinkop',
     storageBucket: 'presensi-dinkop.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: '#',
+    apiKey: 'AIzaSyArzz2wqtJUGdbjSekYV7oJHLJ_ZBwJEW4',
     appId: '1:649346244475:ios:bea3df732c02999289a7de',
     messagingSenderId: '649346244475',
     projectId: 'presensi-dinkop',
@@ -68,7 +68,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: '#',
+    apiKey: 'AIzaSyArzz2wqtJUGdbjSekYV7oJHLJ_ZBwJEW4',
     appId: '1:649346244475:ios:bea3df732c02999289a7de',
     messagingSenderId: '649346244475',
     projectId: 'presensi-dinkop',
@@ -77,7 +77,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: '#',
+    apiKey: 'AIzaSyASl8wjEvHW5Weo4LzeDw3xSnsLv-_PKxw',
     appId: '1:649346244475:web:4264a339a90507c089a7de',
     messagingSenderId: '649346244475',
     projectId: 'presensi-dinkop',

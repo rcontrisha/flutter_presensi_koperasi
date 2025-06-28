@@ -7,27 +7,6 @@ class AuthController extends GetxController {
   var isLoading = false.obs;
   final box = GetStorage();
 
-  Future<void> registerUser(String name, String email) async {
-    isLoading.value = true;
-
-    final response = await http.post(
-      Uri.parse('http://192.168.1.8:8000/api/register'),
-      headers: {'Accept': 'application/json'},
-      body: {'name': name, 'email': email},
-    );
-
-    isLoading.value = false;
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      Get.snackbar('Berhasil', data['message']);
-      Get.offAllNamed('/login');
-    } else {
-      final error = json.decode(response.body);
-      Get.snackbar('Error', error['message'] ?? 'Registrasi gagal');
-    }
-  }
-
   Future<void> loginUser(String email, String password) async {
     isLoading.value = true;
 

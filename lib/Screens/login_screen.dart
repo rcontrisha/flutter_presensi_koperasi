@@ -104,19 +104,6 @@ class LoginScreen extends StatelessWidget {
                             style: TextStyle(fontSize: 20.0, color: Colors.white),
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('Belum punya akun?', style: TextStyle(fontSize: 18.0)),
-                            GestureDetector(
-                              onTap: () => Get.toNamed('/register'),
-                              child: const Text(
-                                ' Daftar Akun',
-                                style: TextStyle(fontSize: 18.0, color: Colors.blue),
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
