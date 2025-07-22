@@ -19,7 +19,7 @@ class StatistikController extends GetxController {
     print(token);
 
     final response = await http.get(
-      Uri.parse('http://192.168.1.8:8000/api/statistik'),
+      Uri.parse('http://192.168.1.23:8000/api/statistik'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',

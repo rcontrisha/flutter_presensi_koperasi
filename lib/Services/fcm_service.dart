@@ -24,7 +24,7 @@ class FCMService {
       if (fcmToken != null && fcmToken != lastSavedToken) {
         try {
           final response = await http.post(
-            Uri.parse('http://192.168.1.8:8000/api/save-fcm-token'),
+            Uri.parse('http://192.168.1.23:8000/api/save-fcm-token'),
             headers: {
               'Authorization': 'Bearer $tokenUser',
               'Accept': 'application/json',

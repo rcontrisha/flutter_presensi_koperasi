@@ -7,15 +7,16 @@ class AuthController extends GetxController {
   var isLoading = false.obs;
   final box = GetStorage();
 
-  Future<void> loginUser(String email, String password) async {
+  Future<void> loginUser(String email, String password, [bool rememberMe = false]) async {
     isLoading.value = true;
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.8:8000/api/login'),
+      Uri.parse('http://192.168.1.23:8000/api/login'),
       headers: {'Accept': 'application/json'},
       body: {
         'email': email,
         'password': password,
+        'remember': rememberMe ? '1' : '0',
       },
     );
 
@@ -24,9 +25,11 @@ class AuthController extends GetxController {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
 
-      // ✅ Simpan token ke storage
+      // Selalu simpan token untuk kebutuhan API selama aplikasi aktif
       box.write('token', data['access_token']);
-      box.write('user', data['user']); // Optional: simpan user info
+      box.write('remember_me', rememberMe); // simpan status remember me
+
+      box.write('user', data['user']);
       box.write('pegawai', data['pegawai']);
 
       Get.snackbar('Sukses', 'Login berhasil');
@@ -47,7 +50,7 @@ class AuthController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.8:8000/api/forgot-password'),
+        Uri.parse('http://192.168.1.23:8000/api/forgot-password'),
         headers: {
           'Accept': 'application/json',
         },

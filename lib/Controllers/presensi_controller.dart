@@ -46,7 +46,7 @@ class PresensiController extends GetxController {
       final token = box.read('token');
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.8:8000/api/status-presensi"),
+        Uri.parse("http://192.168.1.23:8000/api/status-presensi"),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -99,7 +99,7 @@ class PresensiController extends GetxController {
 
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.1.8:8000/api/post-presensi'),
+        Uri.parse('http://192.168.1.23:8000/api/post-presensi'),
       );
 
       request.headers.addAll({
@@ -143,7 +143,7 @@ class PresensiController extends GetxController {
       final token = box.read('token');
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.8:8000/api/riwayat-presensi"),
+        Uri.parse("http://192.168.1.23:8000/api/riwayat-presensi"),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -193,7 +193,7 @@ class PresensiController extends GetxController {
     final token = box.read('token');
 
     final response = await http.post(
-      Uri.parse("http://192.168.1.8:8000/api/logout"),
+      Uri.parse("http://192.168.1.23:8000/api/logout"),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -201,7 +201,11 @@ class PresensiController extends GetxController {
     );
 
     if (response.statusCode == 200) {
-      box.erase(); // Hapus semua data lokal
+      box.remove('token');
+      box.remove('user');
+      box.remove('pegawai');
+      box.remove('read_surat_ids');
+      box.remove('last_fcm_token');
       Get.offAllNamed('/login'); // Arahkan ke halaman login
     } else {
       Get.snackbar("Gagal", "Logout gagal. Coba lagi.");

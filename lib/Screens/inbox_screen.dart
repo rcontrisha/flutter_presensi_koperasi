@@ -37,7 +37,7 @@ class InboxScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             final surat = controller.suratList[index];
             final isRead = readIds.contains(surat['id']);
-            final url = 'http://192.168.1.8:8000/storage/${surat['file_path']}';
+            final url = 'http://192.168.1.23:8000/storage/${surat['file_path']}';
             final judul = "${surat['judul_surat']} - ${GetStorage().read('user')['name']}";
 
             return Card(

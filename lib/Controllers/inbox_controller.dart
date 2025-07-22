@@ -15,7 +15,7 @@ class InboxController extends GetxController {
     final token = box.read('token');
     final readIds = box.read<List>('read_surat_ids') ?? [];
 
-    final url = Uri.parse('http://192.168.1.8:8000/api/peringatan');
+    final url = Uri.parse('http://192.168.1.23:8000/api/peringatan');
 
     try {
       final response = await http.get(

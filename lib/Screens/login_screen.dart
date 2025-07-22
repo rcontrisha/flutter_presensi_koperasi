@@ -1,16 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:presensi_dinkop/Controllers/auth_controller.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final emailC = TextEditingController();
   final passC = TextEditingController();
   final auth = Get.find<AuthController>();
-
   final _formKey = GlobalKey<FormState>();
+  final RxBool rememberMe = false.obs;
 
-  LoginScreen({super.key});
+  @override
+  void initState() {
+    super.initState();
+    final box = GetStorage();
+
+    final savedEmail = box.read('remembered_email');
+    if (savedEmail != null) {
+      emailC.text = savedEmail;
+    }
+
+    final rememberStatus = box.read('remember_me');
+    if (rememberStatus != null && rememberStatus == true) {
+      rememberMe.value = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +109,15 @@ class LoginScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            Row(
+                              children: [
+                                Obx(() => Checkbox(
+                                      value: rememberMe.value,
+                                      onChanged: (val) => rememberMe.value = val ?? false,
+                                    )),
+                                const Text('Remember Me'),
+                              ],
+                            ),
                           ],
                         ),
                         ElevatedButton(
@@ -96,7 +127,17 @@ class LoginScreen extends StatelessWidget {
                           ),
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-                              await auth.loginUser(emailC.text.trim(), passC.text.trim());
+                              final box = GetStorage();
+                              if (rememberMe.value) {
+                                box.write('remembered_email', emailC.text.trim());
+                              } else {
+                                box.remove('remembered_email');
+                              }
+                              await auth.loginUser(
+                                emailC.text.trim(),
+                                passC.text.trim(),
+                                rememberMe.value, // <--- ini penting!
+                              );
                             }
                           },
                           child: const Text(

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:presensi_dinkop/Controllers/presensi_controller.dart';
 import 'package:presensi_dinkop/Controllers/profile_controller.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
-
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
@@ -42,23 +42,96 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
+  void _onAvatarTap() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.visibility),
+                title: const Text('Lihat Foto Profil'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showFullProfilePhoto();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Ganti Foto Profil'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAndUploadPhoto();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFullProfilePhoto() {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        child: InteractiveViewer(
+          child: Image.network(
+            // Ganti dengan URL foto profil user jika sudah ada
+            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _pickAndUploadPhoto() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+
+    if (picked != null) {
+      Get.snackbar(
+        "Mengunggah...",
+        "Nama file: ${picked.name}",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.teal,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 1),
+      );
+      final success = await controller.uploadPhoto(picked);
+      if (success) {
+        // Sudah ada snackbar di controller, tidak perlu lagi di sini
+      }
+    } else {
+      Get.snackbar(
+        "Batal",
+        "Tidak ada foto yang dipilih",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.grey,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-
-        final profile = controller.profileData.value; // ✅ ambil .value
-
+        final profile = controller.profileData.value;
         if (profile == null) {
-          return _buildCreateProfileForm(); // belum ada data
+          return _buildCreateProfileForm();
         }
-
-        return _buildProfileView(context, profile, screenHeight); // ada data
+        return _buildProfileView(context, profile, screenHeight);
       }),
     );
   }
@@ -93,7 +166,15 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         children: [
           // Bagian atas
-          SizedBox(height: screenHeight * 0.2, child: const _TopPortion()),
+          SizedBox(
+            height: screenHeight * 0.2,
+            child: _TopPortion(
+              onAvatarTap: _onAvatarTap,
+              photoUrl: (profile['foto_profil'] != null && profile['foto_profil'].toString().isNotEmpty)
+                  ? 'http://192.168.1.23:8000/storage/${profile['foto_profil']}'
+                  : 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+            ),
+          ),
           const SizedBox(height: 55), // untuk mengimbangi overflow avatar
           Padding(
             padding: const EdgeInsets.symmetric(
@@ -593,12 +674,14 @@ class ProfileInfoItem {
 }
 
 class _TopPortion extends StatelessWidget {
-  const _TopPortion();
+  final VoidCallback? onAvatarTap;
+  final String photoUrl;
+  const _TopPortion({this.onAvatarTap, this.photoUrl = ''});
 
   @override
   Widget build(BuildContext context) {
     return Stack(
-      clipBehavior: Clip.none, // Supaya bisa overflow keluar container
+      clipBehavior: Clip.none,
       children: [
         // Bagian biru (gradient)
         Container(
@@ -623,41 +706,45 @@ class _TopPortion extends StatelessWidget {
           left: 0,
           right: 0,
           child: Center(
-            child: SizedBox(
-              width: 150,
-              height: 150,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.black,
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: NetworkImage(
-                          'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+            child: GestureDetector(
+              onTap: onAvatarTap,
+              child: SizedBox(
+                width: 150,
+                height: 150,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(photoUrl),
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: CircleAvatar(
-                      radius: 20,
-                      backgroundColor:
-                          Theme.of(context).scaffoldBackgroundColor,
+                    // Tambahkan icon edit di pojok bawah
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
                       child: Container(
-                        margin: const EdgeInsets.all(8.0),
-                        decoration: const BoxDecoration(
-                          color: Colors.green,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
+                        padding: const EdgeInsets.all(6),
+                        child: const Icon(Icons.camera_alt, size: 22, color: Colors.blue),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

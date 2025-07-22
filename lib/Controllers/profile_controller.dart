@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ProfileController extends GetxController {
   var isLoading = false.obs;
@@ -13,7 +17,7 @@ class ProfileController extends GetxController {
     final token = box.read('token');
 
     final response = await http.get(
-      Uri.parse('http://192.168.1.8:8000/api/profile'),
+      Uri.parse('http://192.168.1.23:8000/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -21,6 +25,7 @@ class ProfileController extends GetxController {
     );
 
     if (response.statusCode == 200) {
+      print(response.body);
       profileData.value = json.decode(response.body)['data'];
     } else {
       profileData.value = null; // reset jika gagal
@@ -34,7 +39,7 @@ class ProfileController extends GetxController {
     final token = box.read('token');
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.8:8000/api/profile'),
+      Uri.parse('http://192.168.1.23:8000/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -55,7 +60,7 @@ class ProfileController extends GetxController {
     final token = box.read('token');
 
     final response = await http.put(
-      Uri.parse('http://192.168.1.8:8000/api/profile'),
+      Uri.parse('http://192.168.1.23:8000/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -83,7 +88,7 @@ class ProfileController extends GetxController {
     }
 
     final response = await http.put(
-      Uri.parse('http://192.168.1.8:8000/api/user/update-password'),
+      Uri.parse('http://192.168.1.23:8000/api/user/update-password'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -98,6 +103,31 @@ class ProfileController extends GetxController {
     if (response.statusCode == 200) {
       return true;
     } else {
+      return false;
+    }
+  }
+
+  Future<bool> uploadPhoto(XFile file) async {
+    final token = box.read('token');
+    final url = Uri.parse('http://192.168.1.23:8000/api/profile/photo');
+
+    final request = http.MultipartRequest('POST', url)
+      ..headers['Authorization'] = 'Bearer $token';
+    request.files.add(
+      await http.MultipartFile.fromPath('foto', file.path,
+          contentType: MediaType('image', file.path.split('.').last)),
+    );
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      await fetchProfile(); // refresh profile
+      Get.snackbar("Berhasil", "Foto profil berhasil diubah");
+      return true;
+    } else {
+      Get.snackbar("Error", "Gagal upload foto profil");
       return false;
     }
   }
